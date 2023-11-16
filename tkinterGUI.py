@@ -2,7 +2,8 @@ import tkinter as tk
 import tkinter.filedialog as fd
 import sys
 
-#GUI基本界面设计/文件选择控件组
+
+# GUI基本界面设计/文件选择控件组
 class FileSelector:
     def __init__(self, parent, btntext, i, pathname):
         self.parent = parent
@@ -30,24 +31,29 @@ class FileSelector:
 
 
 class Root:
-    def __init__(self, title, width, height, color):
+    def __init__(self, title):
         self.root = tk.Tk()
-        self.width = width
-        self.height = height
-        self.screen_width = self.root.winfo_screenwidth()
-        self.screen_height = self.root.winfo_screenheight()
         self.root.title(title)
-        self.root.geometry(f"{self.width}x{self.height}+{round((self.screen_width - self.width)/2)}+{round((self.screen_height - self.height)/2)}")
-        self.root.config(bg=color)
         self.file_selectors = []
+        
+    def resize_root(self):
+        self.root.update_idletasks()
+        width = self.root.winfo_width()
+        height = self.root.winfo_height()
+        screen_width = self.root.winfo_screenwidth()
+        screen_height = self.root.winfo_screenheight()
+        x = round((screen_width - width) / 2)
+        y = round((screen_height - height) / 2)
+        self.root.geometry(f"{width}x{height}+{x}+{y}")
 
     def add_fileSelector(self, btntexts):
         for i, btntext in enumerate(btntexts, start=1):
             btntext = "请选择" + btntext + "文件"
             pathname = f"file{i}_path"
             file_selector = FileSelector(self.root, btntext, i, pathname)
-            self.file_selectors.append(file_selector)
+            self.file_selectors.append(file_selector) 
         self.confirm_cancel_(i + 1)
+        self.resize_root()
 
     def confirm_cancel_(self, loc):
         frame = tk.Frame(self.root)
