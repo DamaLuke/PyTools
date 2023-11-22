@@ -2,10 +2,11 @@ import openpyxl
 from openpyxl.utils import get_column_letter
 from openpyxl.styles import PatternFill, Border, Side, Alignment, Font
 import pandas as pd
+from tkinter import messagebox as msg
 
 # 输出带格式的excel
 class xlStyleFormat:
-    def __init__(self, path, dfs, headers = None):
+    def __init__(self, path, dfs, headers = None, info =False):
         self.path = path
         self.dfs = dfs
         self.headers = headers
@@ -17,6 +18,8 @@ class xlStyleFormat:
         self.border = Border(left=thin, right=thin, top=thin, bottom=thin)
         self.align = Alignment(horizontal="center", vertical="center", wrapText=True)
         self.format_excel
+        self.completedInfo
+        self.info = info
 
     def format_col(self, cell):
         if cell.value:
@@ -31,6 +34,9 @@ class xlStyleFormat:
             cell.fill = self.body_fill
             cell.border = self.border
             cell.alignment = self.align
+            
+    def completedInfo(self):
+        msg.showinfo("Completed","已完成！")
 
     def format_excel(self):
         wb = openpyxl.load_workbook(self.path)
@@ -48,6 +54,8 @@ class xlStyleFormat:
             for row in ws.iter_rows(min_row=2):
                 self.format_row(row)
         wb.save(self.path)
+        if self.info == True:
+            self.completedInfo()
 
     def write_excel(self):
         with pd.ExcelWriter(self.path) as writer:
@@ -55,3 +63,4 @@ class xlStyleFormat:
                 df.to_excel(writer, sheet_name=sheet, index=False)
         print("outfile path is in:" + self.path)
         self.format_excel()
+        
