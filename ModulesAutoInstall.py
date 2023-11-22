@@ -1,5 +1,5 @@
 # 检测并自动安装第三方包
-def AutoInstall(libs):
+def AutoInstall(*libs):#改为可变参数，简化使用
     import importlib.util
     import pip
 
