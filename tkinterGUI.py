@@ -31,11 +31,11 @@ class FileSelector:
 
 
 class Root:
-    def __init__(self, title = "选择对应的文件"): #title default value
+    def __init__(self, title="选择对应的文件"):  # title default value
         self.root = tk.Tk()
         self.root.title(title)
         self.file_selectors = []
-        
+
     def resize_root(self):
         self.root.update_idletasks()
         width = self.root.winfo_width()
@@ -46,12 +46,12 @@ class Root:
         y = round((screen_height - height) / 2)
         self.root.geometry(f"{width}x{height}+{x}+{y}")
 
-    def add_fileSelector(self, *btntexts): #设为可变参数，简化输入
+    def add_fileSelector(self, *btntexts):  # 设为可变参数，简化输入
         for i, btntext in enumerate(btntexts, start=1):
             btntext = "请选择" + btntext + "文件"
             pathname = f"file{i}_path"
             file_selector = FileSelector(self.root, btntext, i, pathname)
-            self.file_selectors.append(file_selector) 
+            self.file_selectors.append(file_selector)
         self.confirm_cancel_(i + 1)
         self.resize_root()
 
