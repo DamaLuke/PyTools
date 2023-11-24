@@ -31,7 +31,7 @@ class FileSelector:
 
 
 class Root:
-    def __init__(self, title):
+    def __init__(self, title = "选择对应的文件"): #title default value
         self.root = tk.Tk()
         self.root.title(title)
         self.file_selectors = []
@@ -46,7 +46,7 @@ class Root:
         y = round((screen_height - height) / 2)
         self.root.geometry(f"{width}x{height}+{x}+{y}")
 
-    def add_fileSelector(self, btntexts):
+    def add_fileSelector(self, *btntexts): #设为可变参数，简化输入
         for i, btntext in enumerate(btntexts, start=1):
             btntext = "请选择" + btntext + "文件"
             pathname = f"file{i}_path"
