@@ -65,6 +65,6 @@ class xlStyleFormat:
     def write_excel(self, path, dfs, headers = None, info=False):
         with pd.ExcelWriter(path) as writer:
             for sheet, df in dfs.items():
-                df.to_excel(writer, sheet_name=sheet, index=False)
+                df.to_excel(writer, sheet_name=sheet, index=False).drop_duplicates() # drop duplicate before output
         print("outfile path is in:" + path)
         self.format_excel(path, headers, info)
