@@ -9,3 +9,9 @@ outpath = os.path.join(rootpath, "output")
 
 if not os.path.exists(outpath):
     os.mkdir(outpath)
+
+SUBJID = '受试者代码'
+SITEID = '中心编号'
+VISIT = '访视名称'
+FORMNM = '表名称'
+RECREP = '序号'
