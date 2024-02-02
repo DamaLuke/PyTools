@@ -102,7 +102,7 @@ class excelCompare():
         res_wb.save(self.compfile_path)   
         return res_wb          
 
-    #commonsheet进行比对，分别输出changed/unchanged/newly added/deleted四种状态 
+    #commonsheet进行比对，分别输出changed/unchanged/newly added三种状态 
     def compare_sheet(self):
         matchsheet = match_sheets(self.oldsheet_name,self.newsheet_name)[0]   
         only_in_oldsheet = match_sheets(self.oldsheet_name,self.newsheet_name)[1]   
@@ -113,6 +113,7 @@ class excelCompare():
         new_wb = delete_status_col(new_wb)
         startrow = self.startrow
         
+        # 比较两个文件都存在的sheet
         for item in matchsheet:
             sheet_name=item  
             
@@ -167,18 +168,7 @@ class excelCompare():
                
             # 复制第一列的内容，清除内容并保留格式，作为Row Status
             create_Row_status(new_ws)    
-            
-            for key in oldkeydict.keys() - newkeydict.keys():
-                new_ws.insert_rows(new_ws.max_row + 1)
-                maxrow = new_ws.max_row + 1
-
-                for oldcell in old_ws[oldkeydict.get(key)]:
-                    new_ws.cell(maxrow,oldcell.column + 1).value = oldcell.value
-                    new_ws.cell(maxrow,oldcell.column + 1).font = copy.copy(oldcell.font)                
-                    new_ws.cell(maxrow,oldcell.column + 1).border = copy.copy(oldcell.border)  
-                    
-                status_rowflag[maxrow]='deleted'
-                                        
+                                                    
             for key in newkeydict.keys() - oldkeydict.keys():                    
                 status_rowflag[newkeydict.get(key)]='newly added'    
                 
@@ -188,27 +178,8 @@ class excelCompare():
             for cell in new_ws['A']:
                 if cell.value == '':
                     cell.value = 'unchanged'           
-                                    
-        
-        if only_in_oldsheet != None:
-            for item in only_in_oldsheet:
-                sheet_name=item  
-                print('sheet only in old file: %s' % (sheet_name))
-                old_ws = old_wb[sheet_name]
-                new_ws = new_wb.create_sheet(title = sheet_name)
-                for row in old_ws.iter_rows():
-                    for cell in row:
-                        new_ws.cell(row = cell.row, column = cell.column, value = cell.value)
-                        new_ws.cell(cell.row, cell.column).fill = copy.copy(cell.fill)
-                        new_ws.cell(cell.row, cell.column).font = copy.copy(cell.font)
-                        new_ws.cell(cell.row, cell.column).border = copy.copy(cell.border)
-                        
-                create_Row_status(new_ws)  
-                
-                for cell in new_ws['A']:
-                    if cell.row != 1:
-                        cell.value = 'deleted'
-                                 
+                                                                     
+        # 旧文件不存在，但新文件存在的sheet，全部定义为新增数据
         if only_in_newsheet != None:
             for item in only_in_newsheet:
                 sheet_name = item
@@ -222,3 +193,7 @@ class excelCompare():
                         cell.value = 'newly added'
                 
         new_wb.save(self.compfile_path)
+       
+                                            
+    
+
