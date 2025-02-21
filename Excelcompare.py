@@ -3,6 +3,7 @@ import openpyxl
 import os
 import copy
 import itertools
+from tkinter import messagebox as msg
         
 """
 使用excelCompare输入参数创建实例，再调用compare_sheet()即可进行比对
@@ -97,12 +98,12 @@ class excelCompare():
         self.startrow = startrow     
 
     def create_res_wb(self): #复制newfile副本，随后在副本上执行相关操作
-        new_wb = openpyxl.load_workbook(self.newfile_path)
+        new_wb = openpyxl.load_workbook(self.newfile_path,data_only=True)
         res_wb = new_wb      
         res_wb.save(self.compfile_path)   
         return res_wb          
 
-    #commonsheet进行比对，分别输出changed/unchanged/newly added/deleted四种状态 
+    #commonsheet进行比对，分别输出changed/unchanged/newly added三种状态 
     def compare_sheet(self):
         matchsheet = match_sheets(self.oldsheet_name,self.newsheet_name)[0]   
         only_in_oldsheet = match_sheets(self.oldsheet_name,self.newsheet_name)[1]   
@@ -113,6 +114,7 @@ class excelCompare():
         new_wb = delete_status_col(new_wb)
         startrow = self.startrow
         
+        # 比较两个文件都存在的sheet
         for item in matchsheet:
             sheet_name=item  
             
@@ -150,35 +152,32 @@ class excelCompare():
                         newprevalue = oldrowdata.pre_values.get(prenames)
                         if oldprevalue != newprevalue:
                             new_ws.cell(newrow,cell.column).value = old_ws.cell(row,cell.column).value
-                                
+                            
+                    print('key value:' + str(oldkeyvalue))            
                     for key in newrowdata.comp_values.keys():#判断changed的数据，用批注显示数据的变化 
-                        if oldrowdata.comp_values.get(key) != newrowdata.comp_values.get(key):
-                            print('key value:' + str(oldkeyvalue))
+                        if str(newrowdata.comp_values.get(key))!='None':
+                            new_value = str(newrowdata.comp_values.get(key))
+                        else:
+                            new_value = ''
+                        if str(oldrowdata.comp_values.get(key))!='None':
+                            old_value = str(oldrowdata.comp_values.get(key))    
+                        else:
+                            old_value = ''           
+                        if old_value != new_value:
                             status_rowflag[newrowdata.row] = 'changed'
                             cord = newrowdata.compcell_cord.get(key)
                             cell = new_ws[cord]
                             yellow_fill=openpyxl.styles.PatternFill(start_color="FFFF00", end_color="FFFF00",fill_type='solid') 
                             cell.fill = yellow_fill
-                            comment = openpyxl.comments.Comment('Previous Value: \n' + str(oldrowdata.comp_values.get(key)) , 'auto_user')
+                            comment = openpyxl.comments.Comment('Previous Value: \n' + old_value , 'auto_user')
                             cell.comment = comment    
-                            print('value: %s' % (str(newrowdata.comp_values.get(key))))
-                            print('previous value: %s' % (str(oldrowdata.comp_values.get(key))))  
-                                                                                                                    
-               
+
+                            print(
+                                'current value:{}, previous value:{}'.format(new_value, old_value)
+                            )                                
             # 复制第一列的内容，清除内容并保留格式，作为Row Status
             create_Row_status(new_ws)    
-            
-            for key in oldkeydict.keys() - newkeydict.keys():
-                new_ws.insert_rows(new_ws.max_row + 1)
-                maxrow = new_ws.max_row + 1
-
-                for oldcell in old_ws[oldkeydict.get(key)]:
-                    new_ws.cell(maxrow,oldcell.column + 1).value = oldcell.value
-                    new_ws.cell(maxrow,oldcell.column + 1).font = copy.copy(oldcell.font)                
-                    new_ws.cell(maxrow,oldcell.column + 1).border = copy.copy(oldcell.border)  
-                    
-                status_rowflag[maxrow]='deleted'
-                                        
+                                                    
             for key in newkeydict.keys() - oldkeydict.keys():                    
                 status_rowflag[newkeydict.get(key)]='newly added'    
                 
@@ -188,27 +187,8 @@ class excelCompare():
             for cell in new_ws['A']:
                 if cell.value == '':
                     cell.value = 'unchanged'           
-                                    
-        
-        if only_in_oldsheet != None:
-            for item in only_in_oldsheet:
-                sheet_name=item  
-                print('sheet only in old file: %s' % (sheet_name))
-                old_ws = old_wb[sheet_name]
-                new_ws = new_wb.create_sheet(title = sheet_name)
-                for row in old_ws.iter_rows():
-                    for cell in row:
-                        new_ws.cell(row = cell.row, column = cell.column, value = cell.value)
-                        new_ws.cell(cell.row, cell.column).fill = copy.copy(cell.fill)
-                        new_ws.cell(cell.row, cell.column).font = copy.copy(cell.font)
-                        new_ws.cell(cell.row, cell.column).border = copy.copy(cell.border)
-                        
-                create_Row_status(new_ws)  
-                
-                for cell in new_ws['A']:
-                    if cell.row != 1:
-                        cell.value = 'deleted'
-                                 
+                                                                     
+        # 旧文件不存在，但新文件存在的sheet，全部定义为新增数据
         if only_in_newsheet != None:
             for item in only_in_newsheet:
                 sheet_name = item
@@ -222,3 +202,5 @@ class excelCompare():
                         cell.value = 'newly added'
                 
         new_wb.save(self.compfile_path)
+        msg.showinfo("Completed", "已完成！") 
+
