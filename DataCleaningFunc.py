@@ -3,6 +3,7 @@ import pandas as pd
 SUBJID = '受试者代码'
 SITEID = '中心编号'
 SITENM = '中心名称'
+SUBJSAT = '受试者状态'
 VISIT = '访视名称'
 FORMNM = '表名称'
 MODULEMN = '模块名称'
@@ -13,6 +14,13 @@ RECREP1 = '序号.1' # 百奥知的AE或CM多记录存在父子记录关系，�
 
 LBTEST = "检查项目"
 LBDAT = '采样日期'
+
+AETERM = '不良事件名称'
+AESTDAT = '开始日期'
+AEENDAT = '结束日期'
+CMTRT = '药物名称'
+CMSTDAT = '开始日期'
+CMENDAT = '结束日期'
 
 def StrtoInt(value):
     """Convert string to integer except illegal values or missing value."""
@@ -138,3 +146,39 @@ def calculate_dates(df, date_column1, date_column2, new_column, operation='subtr
         raise ValueError("The 'operation' parameter should be either 'subtract', or 'difference_in_days'.")
 
     return df
+
+
+def merge_reduce(df1, df2): 
+    """
+    Merges two DataFrames using a left join on the specified SITEID.
+
+    Parameters:
+        df1 (DataFrame): The first DataFrame to merge.
+        df2 (DataFrame): The second DataFrame to merge.
+
+    Returns:
+        DataFrame: A new DataFrame resulting from the left join of df1 and df2.
+    """
+    return pd.merge(
+        df1,
+        df2,
+        how="left",
+        on=SITEID,
+    )
+
+def daydif(d1, d2):
+    """
+    Calculates the difference in days between two dates.
+
+    Args:
+        d1 (str or datetime-like): The first date.
+        d2 (str or datetime-like): The second date.
+
+    Returns:
+        int or pd.NA: The difference in days between d1 and d2, or pd.NA if the input dates are invalid.
+    """
+    try:
+        dif = (pd.to_datetime(d1, errors='coerce') - pd.to_datetime(d2, errors='coerce')).days
+        return dif
+    except:
+        return pd.NA
